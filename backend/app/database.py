@@ -16,3 +16,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Every model inherits from this; registers the model with SQLAlchemy's table metadata
 class Base(DeclarativeBase):
     pass
+
+
+def get_db():
+    # yields one session per request; FastAPI runs the code after yield once the request is done
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
