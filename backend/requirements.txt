@@ -2,3 +2,7 @@ sqlalchemy
 pydantic
 fastapi
 uvicorn
+python-multipart
+transformers
+torch
+pillow

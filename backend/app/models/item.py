@@ -25,6 +25,8 @@ class Item(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))  # FK -> categories.id
     status: Mapped[Status] = mapped_column(default=Status.not_listed)  # stored as constrained VARCHAR
     attributes: Mapped[dict] = mapped_column(JSON, default=dict)  # category-specific fields blob
+    condition: Mapped[str | None] = mapped_column(default=None)  # e.g. "good", "worn" — plain string, not enum
+    image_path: Mapped[str | None] = mapped_column(default=None)  # filesystem path to the uploaded image
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())  # set by SQLite on insert
 
     category: Mapped["Category"] = relationship(back_populates="items")  # lets you do item.category

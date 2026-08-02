@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import models  # noqa: F401 — registers models before create_all
 from app.database import Base, engine
-from app.routers import category, item
+from app.routers import category, classify, item
 
 Base.metadata.create_all(engine)  # dev convenience; a migration tool replaces this later
 
@@ -18,6 +18,7 @@ app.add_middleware(
 
 app.include_router(category.router)
 app.include_router(item.router)
+app.include_router(classify.router)
 
 
 @app.get("/health")

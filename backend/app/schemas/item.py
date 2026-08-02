@@ -26,6 +26,7 @@ CATEGORY_ATTRIBUTE_SCHEMAS: dict[str, type[BaseModel]] = {
 class ItemCreate(BaseModel):
     category: str  # category *name*, e.g. "baseball card" — not the DB id
     attributes: dict[str, Any]
+    condition: str | None = None  # e.g. CLIP's suggested condition, or None if not set
 
     @model_validator(mode="after")
     def validate_attributes(self) -> "ItemCreate":
@@ -42,6 +43,8 @@ class ItemRead(BaseModel):
     category_id: int
     status: Status
     attributes: dict[str, Any]
+    condition: str | None
+    image_path: str | None
     model_config = ConfigDict(from_attributes=True)  # allows building from a SQLAlchemy object
 
 

@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+import uuid
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -9,6 +12,9 @@ from app.schemas.status_history import StatusHistoryRead
 
 router = APIRouter(prefix="/items", tags=["items"])
 
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
 
 @router.post("", response_model=ItemRead)
 def create_item(item: ItemCreate, db: Session = Depends(get_db)):
@@ -18,7 +24,7 @@ def create_item(item: ItemCreate, db: Session = Depends(get_db)):
     if db_category is None:
         raise HTTPException(status_code=404, detail=f"Category not found: {item.category!r}")
 
-    db_item = Item(category_id=db_category.id, attributes=item.attributes)
+    db_item = Item(category_id=db_category.id, attributes=item.attributes, condition=item.condition)
     db.add(db_item)
     db.flush()  # assigns db_item.id/status without committing, so StatusHistory can reference them
 
@@ -65,3 +71,22 @@ def get_item_status_history(item_id: int, db: Session = Depends(get_db)):
         select(StatusHistory).where(StatusHistory.item_id == item_id)
     ).scalars().all()
     return history
+
+
+@router.post("/{item_id}/image", response_model=ItemRead)
+def upload_item_image(item_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    db_item = db.get(Item, item_id)
+    if db_item is None:
+        raise HTTPException(status_code=404, detail=f"Item not found: {item_id}")
+
+    extension = Path(file.filename).suffix
+    filename = f"{item_id}-{uuid.uuid4().hex}{extension}"
+    file_path = UPLOAD_DIR / filename
+
+    with open(file_path, "wb") as f:
+        f.write(file.file.read())
+
+    db_item.image_path = file_path.as_posix()  # forward slashes even on Windows, for use in URLs later
+    db.commit()
+    db.refresh(db_item)
+    return db_item
