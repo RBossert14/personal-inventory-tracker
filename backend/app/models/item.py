@@ -30,4 +30,6 @@ class Item(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())  # set by SQLite on insert
 
     category: Mapped["Category"] = relationship(back_populates="items")  # lets you do item.category
-    status_history: Mapped[list["StatusHistory"]] = relationship(back_populates="item")  # all transitions
+    status_history: Mapped[list["StatusHistory"]] = relationship(
+        back_populates="item", cascade="all, delete-orphan"  # delete history rows when the item is deleted
+    )

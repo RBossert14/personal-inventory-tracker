@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 backend/inventory.db
 backend/uploads/
+
+# ClaudeMap (local tool-generated files)
+.claude/
+claudemap-cache.json
+claudemap-maps.json

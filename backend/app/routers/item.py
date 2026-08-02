@@ -90,3 +90,16 @@ def upload_item_image(item_id: int, file: UploadFile = File(...), db: Session = 
     db.commit()
     db.refresh(db_item)
     return db_item
+
+
+@router.delete("/{item_id}", status_code=204)
+def delete_item(item_id: int, db: Session = Depends(get_db)):
+    db_item = db.get(Item, item_id)
+    if db_item is None:
+        raise HTTPException(status_code=404, detail=f"Item not found: {item_id}")
+
+    if db_item.image_path:
+        Path(db_item.image_path).unlink(missing_ok=True)  # clean up the uploaded file too
+
+    db.delete(db_item)
+    db.commit()

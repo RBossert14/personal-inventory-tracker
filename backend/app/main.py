@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app import models  # noqa: F401 — registers models before create_all
 from app.database import Base, engine
@@ -19,6 +20,8 @@ app.add_middleware(
 app.include_router(category.router)
 app.include_router(item.router)
 app.include_router(classify.router)
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.get("/health")

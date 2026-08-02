@@ -7,6 +7,7 @@ type Item = {
   category_id: number
   status: string
   attributes: Record<string, unknown>
+  image_path: string | null
 }
 
 type Category = {
@@ -44,6 +45,12 @@ function App() {
     setRefreshCount((c) => c + 1)
   }
 
+  async function handleDelete(itemId: number) {
+    if (!window.confirm('Delete this item?')) return
+    await fetch(`http://localhost:8000/items/${itemId}`, { method: 'DELETE' })
+    setRefreshCount((c) => c + 1)
+  }
+
   return (
     <div className="mx-auto max-w-2xl p-8 space-y-12">
       <h1 className="text-3xl font-bold">Inventory Tracker</h1>
@@ -72,9 +79,16 @@ function App() {
             return (
               <li
                 key={item.id}
-                className="flex items-center justify-between rounded border border-gray-200 px-4 py-2"
+                className="flex items-center gap-4 rounded border border-gray-200 px-4 py-2"
               >
-                <div>
+                {item.image_path && (
+                  <img
+                    src={`http://localhost:8000/${item.image_path}`}
+                    alt=""
+                    className="h-16 w-16 rounded object-cover"
+                  />
+                )}
+                <div className="flex-1">
                   <p className="font-medium">
                     #{item.id} — {category?.name ?? 'unknown category'}
                   </p>
@@ -93,6 +107,12 @@ function App() {
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
+                <button
+                  onClick={() => handleDelete(item.id)}
+                  className="rounded border border-red-600 bg-red-600 px-2 py-1 text-white hover:border-red-700 hover:bg-red-700"
+                >
+                  Delete
+                </button>
               </li>
             )
           })}
