@@ -8,6 +8,8 @@ type Item = {
   attributes: Record<string, unknown>
 }
 
+const STATUS_OPTIONS = ['not listed', 'listed', 'sold']
+
 function App() {
   const [items, setItems] = useState<Item[]>([])
   const [refreshCount, setRefreshCount] = useState(0)
@@ -18,6 +20,15 @@ function App() {
       .then(setItems)
   }, [refreshCount]) // re-fetch whenever refreshCount changes, e.g. after adding an item
 
+  async function handleStatusChange(itemId: number, status: string) {
+    await fetch(`http://localhost:8000/items/${itemId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    setRefreshCount((c) => c + 1)
+  }
+
   return (
     <div>
       <h1>Inventory</h1>
@@ -25,7 +36,15 @@ function App() {
       <ul>
         {items.map((item) => (
           <li key={item.id}>
-            #{item.id} — category {item.category_id} — {item.status}
+            #{item.id} — category {item.category_id} —{' '}
+            <select
+              value={item.status}
+              onChange={(e) => handleStatusChange(item.id, e.target.value)}
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
           </li>
         ))}
       </ul>
