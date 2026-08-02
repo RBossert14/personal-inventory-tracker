@@ -11,6 +11,9 @@ const CATEGORY_FIELDS: Record<string, string[]> = {
   shirt: ['size', 'brand'],
 }
 
+// mirrors CONDITION_OPTIONS on the backend
+const CONDITION_OPTIONS = ['new', 'like new', 'good', 'fair', 'poor']
+
 function AddItemForm({
   categories,
   onItemCreated,
@@ -20,6 +23,9 @@ function AddItemForm({
 }) {
   const [categoryName, setCategoryName] = useState('')
   const [attributes, setAttributes] = useState<Record<string, string>>({})
+  const [condition, setCondition] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [fileInputKey, setFileInputKey] = useState(0) // bumped to force the file input to remount/clear
   const [error, setError] = useState<string | null>(null)
 
   const fields = CATEGORY_FIELDS[categoryName] ?? []
@@ -29,6 +35,33 @@ function AddItemForm({
     setAttributes({}) // clear old fields when category changes
   }
 
+  async function handleSuggest() {
+    if (!imageFile) return
+    setError(null)
+
+    const formData = new FormData()
+    formData.append('file', imageFile)
+
+    const res = await fetch('http://localhost:8000/classify', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (!res.ok) {
+      setError('Could not classify image')
+      return
+    }
+
+    const result = await res.json()
+    if (result.category[0]) {
+      setCategoryName(result.category[0].label)
+      setAttributes({})
+    }
+    if (result.condition[0]) {
+      setCondition(result.condition[0].label)
+    }
+  }
+
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
@@ -36,7 +69,7 @@ function AddItemForm({
     const res = await fetch('http://localhost:8000/items', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category: categoryName, attributes }),
+      body: JSON.stringify({ category: categoryName, attributes, condition: condition || null }),
     })
 
     if (!res.ok) {
@@ -45,8 +78,22 @@ function AddItemForm({
       return
     }
 
+    const createdItem = await res.json()
+
+    if (imageFile) {
+      const uploadData = new FormData()
+      uploadData.append('file', imageFile)
+      await fetch(`http://localhost:8000/items/${createdItem.id}/image`, {
+        method: 'POST',
+        body: uploadData,
+      })
+    }
+
     setCategoryName('')
     setAttributes({})
+    setCondition('')
+    setImageFile(null)
+    setFileInputKey((k) => k + 1)
     onItemCreated()
   }
 
@@ -76,6 +123,17 @@ function AddItemForm({
           />
         ))}
 
+        <select
+          className="rounded border border-gray-300 px-3 py-1.5"
+          value={condition}
+          onChange={(e) => setCondition(e.target.value)}
+        >
+          <option value="">Condition (optional)</option>
+          {CONDITION_OPTIONS.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+
         <button
           type="submit"
           disabled={!categoryName}
@@ -84,6 +142,24 @@ function AddItemForm({
           Add item
         </button>
       </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          key={fileInputKey}
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+        />
+        <button
+          type="button"
+          onClick={handleSuggest}
+          disabled={!imageFile}
+          className="rounded bg-gray-600 px-3 py-1.5 text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Suggest
+        </button>
+      </div>
+
       {error && <p className="text-sm text-red-600">{error}</p>}
     </form>
   )
