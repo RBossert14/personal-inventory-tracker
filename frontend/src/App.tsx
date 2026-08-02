@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AddItemForm from './AddItemForm'
+import AddCategoryForm from './AddCategoryForm'
 
 type Item = {
   id: number
@@ -8,17 +9,31 @@ type Item = {
   attributes: Record<string, unknown>
 }
 
+type Category = {
+  id: number
+  name: string
+}
+
 const STATUS_OPTIONS = ['not listed', 'listed', 'sold']
 
 function App() {
   const [items, setItems] = useState<Item[]>([])
   const [refreshCount, setRefreshCount] = useState(0)
 
+  const [categories, setCategories] = useState<Category[]>([])
+  const [categoryRefreshCount, setCategoryRefreshCount] = useState(0)
+
   useEffect(() => {
     fetch('http://localhost:8000/items')
       .then((res) => res.json())
       .then(setItems)
   }, [refreshCount]) // re-fetch whenever refreshCount changes, e.g. after adding an item
+
+  useEffect(() => {
+    fetch('http://localhost:8000/categories')
+      .then((res) => res.json())
+      .then(setCategories)
+  }, [categoryRefreshCount])
 
   async function handleStatusChange(itemId: number, status: string) {
     await fetch(`http://localhost:8000/items/${itemId}/status`, {
@@ -31,8 +46,19 @@ function App() {
 
   return (
     <div>
+      <h1>Categories</h1>
+      <AddCategoryForm onCategoryCreated={() => setCategoryRefreshCount((c) => c + 1)} />
+      <ul>
+        {categories.map((c) => (
+          <li key={c.id}>{c.name}</li>
+        ))}
+      </ul>
+
       <h1>Inventory</h1>
-      <AddItemForm onItemCreated={() => setRefreshCount((c) => c + 1)} />
+      <AddItemForm
+        categories={categories}
+        onItemCreated={() => setRefreshCount((c) => c + 1)}
+      />
       <ul>
         {items.map((item) => (
           <li key={item.id}>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState, type SubmitEvent } from 'react'
 
 type Category = {
   id: number
@@ -11,17 +11,16 @@ const CATEGORY_FIELDS: Record<string, string[]> = {
   shirt: ['size', 'brand'],
 }
 
-function AddItemForm({ onItemCreated }: { onItemCreated: () => void }) {
-  const [categories, setCategories] = useState<Category[]>([])
+function AddItemForm({
+  categories,
+  onItemCreated,
+}: {
+  categories: Category[]
+  onItemCreated: () => void
+}) {
   const [categoryName, setCategoryName] = useState('')
   const [attributes, setAttributes] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch('http://localhost:8000/categories')
-      .then((res) => res.json())
-      .then(setCategories)
-  }, [])
 
   const fields = CATEGORY_FIELDS[categoryName] ?? []
 
@@ -30,7 +29,7 @@ function AddItemForm({ onItemCreated }: { onItemCreated: () => void }) {
     setAttributes({}) // clear old fields when category changes
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
 
