@@ -25,15 +25,23 @@ function AddCategoryForm({ onCategoryCreated }: { onCategoryCreated: () => void 
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        placeholder="New category name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
-      <button type="submit">Add category</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          className="flex-1 rounded border border-gray-300 px-3 py-1.5"
+          placeholder="New category name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <button
+          type="submit"
+          className="rounded bg-blue-600 px-4 py-1.5 text-white hover:bg-blue-700"
+        >
+          Add category
+        </button>
+      </div>
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </form>
   )
 }

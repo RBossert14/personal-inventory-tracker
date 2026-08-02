@@ -51,26 +51,40 @@ function AddItemForm({
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <select value={categoryName} onChange={(e) => handleCategoryChange(e.target.value)} required>
-        <option value="">Select a category</option>
-        {categories.map((c) => (
-          <option key={c.id} value={c.name}>{c.name}</option>
-        ))}
-      </select>
-
-      {fields.map((field) => (
-        <input
-          key={field}
-          placeholder={field}
-          value={attributes[field] ?? ''}
-          onChange={(e) => setAttributes((prev) => ({ ...prev, [field]: e.target.value }))}
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          className="rounded border border-gray-300 px-3 py-1.5"
+          value={categoryName}
+          onChange={(e) => handleCategoryChange(e.target.value)}
           required
-        />
-      ))}
+        >
+          <option value="">Select a category</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.name}>{c.name}</option>
+          ))}
+        </select>
 
-      <button type="submit" disabled={!categoryName}>Add item</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+        {fields.map((field) => (
+          <input
+            key={field}
+            className="rounded border border-gray-300 px-3 py-1.5"
+            placeholder={field}
+            value={attributes[field] ?? ''}
+            onChange={(e) => setAttributes((prev) => ({ ...prev, [field]: e.target.value }))}
+            required
+          />
+        ))}
+
+        <button
+          type="submit"
+          disabled={!categoryName}
+          className="rounded bg-blue-600 px-4 py-1.5 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Add item
+        </button>
+      </div>
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </form>
   )
 }

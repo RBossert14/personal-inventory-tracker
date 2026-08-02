@@ -45,35 +45,59 @@ function App() {
   }
 
   return (
-    <div>
-      <h1>Categories</h1>
-      <AddCategoryForm onCategoryCreated={() => setCategoryRefreshCount((c) => c + 1)} />
-      <ul>
-        {categories.map((c) => (
-          <li key={c.id}>{c.name}</li>
-        ))}
-      </ul>
+    <div className="mx-auto max-w-2xl p-8 space-y-12">
+      <h1 className="text-3xl font-bold">Inventory Tracker</h1>
 
-      <h1>Inventory</h1>
-      <AddItemForm
-        categories={categories}
-        onItemCreated={() => setRefreshCount((c) => c + 1)}
-      />
-      <ul>
-        {items.map((item) => (
-          <li key={item.id}>
-            #{item.id} — category {item.category_id} —{' '}
-            <select
-              value={item.status}
-              onChange={(e) => handleStatusChange(item.id, e.target.value)}
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </li>
-        ))}
-      </ul>
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Categories</h2>
+        <AddCategoryForm onCategoryCreated={() => setCategoryRefreshCount((c) => c + 1)} />
+        <ul className="space-y-1">
+          {categories.map((c) => (
+            <li key={c.id} className="rounded border border-gray-200 px-3 py-1.5">
+              {c.name}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Items</h2>
+        <AddItemForm
+          categories={categories}
+          onItemCreated={() => setRefreshCount((c) => c + 1)}
+        />
+        <ul className="space-y-2">
+          {items.map((item) => {
+            const category = categories.find((c) => c.id === item.category_id)
+            return (
+              <li
+                key={item.id}
+                className="flex items-center justify-between rounded border border-gray-200 px-4 py-2"
+              >
+                <div>
+                  <p className="font-medium">
+                    #{item.id} — {category?.name ?? 'unknown category'}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {Object.entries(item.attributes)
+                      .map(([key, value]) => `${key}: ${value}`)
+                      .join(', ')}
+                  </p>
+                </div>
+                <select
+                  className="rounded border border-gray-300 px-2 py-1"
+                  value={item.status}
+                  onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                >
+                  {STATUS_OPTIONS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </li>
+            )
+          })}
+        </ul>
+      </section>
     </div>
   )
 }
